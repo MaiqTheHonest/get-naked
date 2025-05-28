@@ -3,7 +3,6 @@ use std::fs::{read_to_string, write};
 
 
 pub fn run() -> std::io::Result<HashSet<String>> {
-    println!("website ran");
 
     let response = reqwest::blocking::get("https://www.nakedcapitalism.com");
     let body = match response {
@@ -14,7 +13,7 @@ pub fn run() -> std::io::Result<HashSet<String>> {
         }
     };
 
-    let body = scraper::Html::parse_document(body.text().unwrap().as_str());
+    let body = scraper::Html::parse_document(body.text().unwrap().as_str());  // shadowing
 
     let title_selector = scraper::Selector::parse("h2.post-title a").unwrap();
     
@@ -30,6 +29,8 @@ pub fn run() -> std::io::Result<HashSet<String>> {
     }
     
     let links_covered = load_links()?;
+
+    // take difference of sets of old links vs new links and return it
     let links_to_post: HashSet<String> = links.difference(&links_covered).cloned().collect();
     save_links(links)?;
 
@@ -40,7 +41,7 @@ pub fn run() -> std::io::Result<HashSet<String>> {
 
 fn load_links() -> std::io::Result<HashSet<String>> {
 
-    let links = match read_to_string("src/links.txt") {
+    let links = match read_to_string("links.txt") {
         Ok(v) => v,
         _ => String::from("none")
     };
@@ -56,7 +57,7 @@ fn save_links(links: HashSet<String>) -> std::io::Result<()> {
     for link in links.iter() {
         text_links += format!("{}\n", link).as_str();
     }
-    write("src/links.txt", &text_links)?;
+    write("links.txt", &text_links)?;
 
     Ok(())
 }
